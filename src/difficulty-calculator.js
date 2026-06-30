@@ -1,9 +1,3 @@
-
-
-
-
-
-
 import { Beatmap, GameMode } from './osu-parser.js';
 
 export function clamp(v, min, max) {
@@ -68,7 +62,7 @@ export function calculateStarRating(beatmap) {
     return { stars: 0, aim: 0, speed: 0 };
   }
 
-  
+
   if (beatmap.mode !== GameMode.osu) {
     return { stars: 0, aim: 0, speed: 0 };
   }
@@ -87,39 +81,39 @@ function computeStandardStars(beatmap) {
   const ar = beatmap.approachRate;
   const od = beatmap.overallDifficulty;
 
-  
+
   const radius = 54.4 - 4.48 * cs;
 
-  
+
   const approachTime = ar <= 5
     ? 1800 - ar * 120
     : 1200 - (ar - 5) * 150;
 
-  
+
   const hitWindow300 = 79.5 - 6 * od;
 
-  
+
   const objects = beatmap.hitObjects.filter(h => !h.isSpinner);
   if (objects.length < 2) {
     return { stars: 0, aim: 0, speed: 0 };
   }
 
-  
+
   const aimStrains = computeAimStrains(objects, radius, approachTime);
-  
+
   const speedStrains = computeSpeedStrains(objects, hitWindow300);
 
-  
+
   const aimStars = Math.sqrt(aimStrains.peak) * 1.06;
   const speedStars = Math.sqrt(speedStrains.peak) * 1.06;
 
-  
+
   const totalStars = Math.sqrt(
     aimStars * aimStars * 1.06 +
     speedStars * speedStars * 1.06
   ) * 1.06;
 
-  
+
   const safe = (n) => isFinite(n) && !isNaN(n) ? n : 0;
 
   return {
@@ -132,7 +126,7 @@ function computeStandardStars(beatmap) {
 function computeAimStrains(objects, radius, approachTime) {
   let currentStrain = 0;
   let peakStrain = 0;
-  const strainDecay = 0.15; 
+  const strainDecay = 0.15;
 
   let prevPrev = null;
   let prev = objects[0];
@@ -145,9 +139,9 @@ function computeAimStrains(objects, radius, approachTime) {
 
     let strain = 0;
     if (prevPrev) {
-      
+
       const dist = Math.hypot(cur.x - prevPrev.x, cur.y - prevPrev.y);
-      
+
       const normDist = Math.max(dist - radius, 0);
       strain = normDist / strainTime;
     } else {
@@ -162,7 +156,7 @@ function computeAimStrains(objects, radius, approachTime) {
     prev = cur;
   }
 
-  
+
   peakStrain *= (1.0 + Math.max(0, 8000 - approachTime) / 8000);
 
   return { peak: peakStrain };
@@ -181,7 +175,7 @@ function computeSpeedStrains(objects, hitWindow300) {
     const strainTime = Math.min(dt, 1000);
 
     const decay = Math.pow(strainDecay, dt / 1000);
-    
+
     const strain = (1000 / strainTime) * (1.0 + Math.max(0, 200 - hitWindow300) / 200);
 
     currentStrain = currentStrain * decay + strain;
@@ -196,18 +190,18 @@ function computeSpeedStrains(objects, hitWindow300) {
 
 
 export const DifficultyColors = {
-  Easy:       '#88b300',
-  Normal:     '#66ccff',
-  Hard:       '#ffcc22',
-  Insane:     '#ff66aa',
-  Expert:     '#aa88ff',
+  Easy: '#88b300',
+  Normal: '#66ccff',
+  Hard: '#ffcc22',
+  Insane: '#ff66aa',
+  Expert: '#aa88ff',
   ExpertPlus: '#5a4a8a',
 };
 
 export function getDifficultyColor(stars) {
-  if (stars < 2)   return DifficultyColors.Easy;
+  if (stars < 2) return DifficultyColors.Easy;
   if (stars < 2.7) return DifficultyColors.Normal;
-  if (stars < 4)   return DifficultyColors.Hard;
+  if (stars < 4) return DifficultyColors.Hard;
   if (stars < 5.3) return DifficultyColors.Insane;
   if (stars < 6.5) return DifficultyColors.Expert;
   return DifficultyColors.ExpertPlus;

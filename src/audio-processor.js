@@ -1,24 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile, toBlobURL } from '@ffmpeg/util';
 
@@ -39,22 +18,27 @@ export function isMultiThreadedEnabled() {
   try {
     const v = localStorage.getItem(STORAGE_KEY);
     if (v === 'false') return false;
-    return true; 
+    return true;
   } catch { return true; }
 }
 
 export function setMultiThreadedEnabled(enabled) {
-  try { localStorage.setItem(STORAGE_KEY, enabled ? 'true' : 'false'); } catch {}
-  
+  try { localStorage.setItem(STORAGE_KEY, enabled ? 'true' : 'false'); } catch { }
+
   _pool = null;
 }
 
 export function isMultiThreadingSupported() {
-  
-  
-  
-  return typeof SharedArrayBuffer !== 'undefined' ||
-         (typeof crossOriginIsolated !== 'undefined' && crossOriginIsolated);
+  try {
+    if (typeof SharedArrayBuffer !== 'undefined') return true;
+  } catch { }
+  try {
+    if (typeof self !== 'undefined' && self.crossOriginIsolated) return true;
+  } catch { }
+  try {
+    if (typeof window !== 'undefined' && window.crossOriginIsolated) return true;
+  } catch { }
+  return false;
 }
 
 
@@ -72,12 +56,12 @@ export async function isWebGPUSupported() {
 export function getPoolSize() {
   const hc = navigator.hardwareConcurrency || 4;
 
-  
-  const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
-                   (navigator.maxTouchPoints > 1 && window.innerWidth < 1024);
 
-  
-  
+  const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) ||
+    (navigator.maxTouchPoints > 1 && window.innerWidth < 1024);
+
+
+
   const maxPool = isMobile ? 2 : 8;
 
   try {
@@ -87,13 +71,13 @@ export function getPoolSize() {
       if (n > 1) return Math.min(n, maxPool);
       localStorage.removeItem(POOL_SIZE_KEY);
     }
-  } catch {}
+  } catch { }
   return Math.min(hc, maxPool);
 }
 
 export function setPoolSize(n) {
   const clamped = Math.max(1, parseInt(n, 10) || 1);
-  try { localStorage.setItem(POOL_SIZE_KEY, String(clamped)); } catch {}
+  try { localStorage.setItem(POOL_SIZE_KEY, String(clamped)); } catch { }
   _pool = null;
 }
 
@@ -115,7 +99,7 @@ class FFmpegPool {
     this.initPromise = (async () => {
       console.log(`[ffmpeg] Initializing pool of ${this.size} ${this.useMT ? 'MT' : 'ST'} instance(s)...`);
 
-      
+
       let blobCoreURL, blobWasmURL, blobWorkerURL;
       if (this.useMT) {
         blobCoreURL = await toBlobURL(mtCoreURL, 'text/javascript');
@@ -126,7 +110,7 @@ class FFmpegPool {
         blobWasmURL = await toBlobURL(stWasmURL, 'application/wasm');
       }
 
-      
+
       const promises = [];
       for (let i = 0; i < this.size; i++) {
         promises.push(this._createInstance(i, blobCoreURL, blobWasmURL, blobWorkerURL, onLog));
@@ -141,7 +125,7 @@ class FFmpegPool {
   async _createInstance(idx, blobCoreURL, blobWasmURL, blobWorkerURL, onLog) {
     const ffmpeg = new FFmpeg();
     if (onLog && idx === 0) {
-      
+
       ffmpeg.on('log', ({ message }) => onLog(message));
     }
     const loadOpts = this.useMT
@@ -156,7 +140,7 @@ class FFmpegPool {
     if (this.available.length > 0) {
       return this.available.pop();
     }
-    
+
     return new Promise(resolve => this.waiters.push(resolve));
   }
 
@@ -171,7 +155,7 @@ class FFmpegPool {
 
   terminate() {
     for (const inst of this.instances) {
-      try { inst.terminate(); } catch {}
+      try { inst.terminate(); } catch { }
     }
     this.instances = [];
     this.available = [];
@@ -186,25 +170,27 @@ let _poolPromise = null;
 
 
 async function getPool(onLog) {
-  
+
   if (_pool && _pool.instances.length > 0 && !_poolPromise) {
     return _pool;
   }
 
-  
+
   if (_poolPromise) {
     await _poolPromise;
     return _pool;
   }
 
-  
+
   _poolPromise = (async () => {
     const wantMT = isMultiThreadedEnabled();
     const canMT = isMultiThreadingSupported();
     const useMT = wantMT && canMT;
 
+    console.log(`[ffmpeg] wantMT=${wantMT} canMT=${canMT} useMT=${useMT} SAB=${typeof SharedArrayBuffer !== 'undefined'} crossIsolated=${typeof self !== 'undefined' ? self.crossOriginIsolated : '?'}`);
+
     if (wantMT && !canMT) {
-      console.warn('[ffmpeg] Multi-threaded requested but SharedArrayBuffer unavailable — falling back to single-threaded.');
+      console.warn('[ffmpeg] MT requested but unavailable — falling back to ST. Server needs COOP/COEP headers.');
     }
 
     if (!_pool) {
@@ -216,7 +202,7 @@ async function getPool(onLog) {
       _pool = new FFmpegPool(size, useMT);
     }
 
-    
+
     if (_pool.instances.length === 0) {
       await _pool.initialize(onLog);
     }
@@ -279,23 +265,23 @@ async function processAudioFileWith(ffmpeg, inputBlob, inputName, multiplier, ch
   }
 
   const inExt = detectFormat(inputName);
-  const inFileName = `input_${Math.random().toString(36).slice(2,8)}.${inExt || 'mp3'}`;
-  const outFileName = `output_${Math.random().toString(36).slice(2,8)}.mp3`;
+  const inFileName = `input_${Math.random().toString(36).slice(2, 8)}.${inExt || 'mp3'}`;
+  const outFileName = `output_${Math.random().toString(36).slice(2, 8)}.mp3`;
 
   await ffmpeg.writeFile(inFileName, await fetchFile(inputBlob));
 
-  
-  
+
+
   let inputSampleRate = sampleRateHint;
   let probeLogs = '';
 
   if (!inputSampleRate) {
-    
+
     const logHandler = ({ message }) => { probeLogs += message + '\n'; };
     ffmpeg.on('log', logHandler);
     try {
       try { await ffmpeg.exec(['-i', inFileName]); }
-      catch {  }
+      catch { }
     } finally {
       ffmpeg.off('log', logHandler);
     }
@@ -305,18 +291,21 @@ async function processAudioFileWith(ffmpeg, inputBlob, inputName, multiplier, ch
 
   const filters = buildFilterChain(multiplier, changePitch, inputSampleRate);
 
-  
-  
-  
-  
-  
-  
-  
-  const ENCODER_DELAY_MS = 61.8;
+  let postFilter = '';
+  if (changePitch) {
+    postFilter = ',adelay=61.8|61.8';
+  } else {
+    const delayMs = 15 * (1 - 2 / multiplier);
+    if (delayMs > 1) {
+      postFilter = ',atrim=start=' + (delayMs / 1000).toFixed(6) + ',asetpts=PTS-STARTPTS';
+    } else if (delayMs < -1) {
+      postFilter = ',adelay=' + Math.round(-delayMs) + '|' + Math.round(-delayMs) + '';
+    }
+  }
 
   const args = [
     '-i', inFileName,
-    '-filter:a', `${filters},adelay=${ENCODER_DELAY_MS}|${ENCODER_DELAY_MS}`,
+    '-filter:a', `${filters}${postFilter}`,
     '-b:a', highQuality ? '192k' : '128k',
     outFileName,
   ];
@@ -340,7 +329,7 @@ async function processAudioFileWith(ffmpeg, inputBlob, inputName, multiplier, ch
   try {
     await ffmpeg.deleteFile(inFileName);
     await ffmpeg.deleteFile(outFileName);
-  } catch {}
+  } catch { }
 
   return { blob, name: 'output.mp3', sampleRate: inputSampleRate };
 }
@@ -364,8 +353,8 @@ export async function generateAudioFilesParallel(jobs, onProgress) {
   const results = new Array(jobs.length);
   let completedCount = 0;
 
-  
-  
+
+
   let sharedSampleRate = null;
   if (jobs.length > 0) {
     const probeFfmpeg = await pool.acquire();
@@ -378,11 +367,11 @@ export async function generateAudioFilesParallel(jobs, onProgress) {
       probeFfmpeg.on('log', logHandler);
       try {
         try { await probeFfmpeg.exec(['-i', inFileName]); }
-        catch {  }
+        catch { }
       } finally {
         probeFfmpeg.off('log', logHandler);
       }
-      try { await probeFfmpeg.deleteFile(inFileName); } catch {}
+      try { await probeFfmpeg.deleteFile(inFileName); } catch { }
       const m = probeLogs.match(/(\d+)\s*Hz/);
       sharedSampleRate = m ? parseInt(m[1], 10) : 44100;
       console.log(`[ffmpeg] Shared sample rate: ${sharedSampleRate} Hz`);
@@ -391,7 +380,7 @@ export async function generateAudioFilesParallel(jobs, onProgress) {
     }
   }
 
-  
+
   const promises = jobs.map(async (job, idx) => {
     const ffmpeg = await pool.acquire();
     try {
@@ -422,18 +411,18 @@ function buildFilterChain(multiplier, changePitch, inputSampleRate) {
   const sr = inputSampleRate || 44100;
 
   if (changePitch) {
-    
+
     const newRate = Math.round(sr * multiplier);
     return `asetrate=${newRate},aresample=${sr}`;
   }
 
-  
+
   return buildAtempoChain(multiplier);
 }
 
 function buildAtempoChain(multiplier) {
-  
-  
+
+
   const stages = [];
   let m = multiplier;
   while (m > 2.0) {

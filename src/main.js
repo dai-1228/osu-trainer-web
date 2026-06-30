@@ -1,11 +1,8 @@
-
-
-
 import { UI } from './ui.js';
 
 
 const ui = new UI();
-window.__ui = ui; 
+window.__ui = ui;
 
 
 window.addEventListener('dragover', (e) => e.preventDefault());

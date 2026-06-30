@@ -1,7 +1,5 @@
 import { defineConfig } from 'vite';
 
-// COOP/COEP headers required for multi-threaded ffmpeg.wasm
-// (enables SharedArrayBuffer, which the MT core needs for pthreads)
 const crossOriginIsolationHeaders = {
   'Cross-Origin-Opener-Policy': 'same-origin',
   'Cross-Origin-Embedder-Policy': 'require-corp',

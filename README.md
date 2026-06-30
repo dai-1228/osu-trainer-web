@@ -1,5 +1,7 @@
 # osu! trainer (web)
 
+# THIS WAS ALL CREATED WITH GLM 5.2 NOT BY ME
+
 A modern, browser-based reimagining of the classic [osu-trainer](https://github.com/FunOrange/osu-trainer) by FunOrange. Drop an `.osz` file, tweak difficulty / BPM, optionally pitch-shift the audio, and download a new `.osz` ready to drag into osu!.
 
 **100% local** — your files never leave your browser. All beatmap parsing, audio processing, and `.osz` packaging happen client-side via WebAssembly.

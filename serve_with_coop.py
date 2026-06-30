@@ -24,7 +24,6 @@ class COOPHandler(http.server.SimpleHTTPRequestHandler):
     def end_headers(self):
         self.send_header('Cross-Origin-Opener-Policy', 'same-origin')
         self.send_header('Cross-Origin-Embedder-Policy', 'require-corp')
-        # Allow-range for proper wasm streaming
         self.send_header('Accept-Ranges', 'bytes')
         super().end_headers()
 
@@ -37,7 +36,6 @@ def main():
         print(f"Error: directory '{directory}' does not exist", file=sys.stderr)
         sys.exit(1)
 
-    # SimpleHTTPRequestHandler supports `directory=` arg in Python 3.7+
     handler = functools.partial(COOPHandler, directory=directory)
 
     with socketserver.TCPServer(("0.0.0.0", port), handler) as httpd:

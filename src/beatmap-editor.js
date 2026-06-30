@@ -1,9 +1,3 @@
-
-
-
-
-
-
 import { Beatmap, GameMode, normalizeText } from './osu-parser.js';
 import {
   calculateMultipliedAR,
@@ -29,15 +23,15 @@ export class BeatmapEditor {
     this.state = EditorState.NOT_READY;
     this.notReadyReason = BadBeatmapReason.NO_BEATMAP_LOADED;
 
-    this.originalBeatmap = null;  
-    this.newBeatmap = null;       
+    this.originalBeatmap = null;
+    this.newBeatmap = null;
 
-    
+
     this.starRating = 0;
     this.aimRating = 0;
     this.speedRating = 0;
 
-    
+
     this.hpIsLocked = false;
     this.csIsLocked = false;
     this.arIsLocked = false;
@@ -50,7 +44,7 @@ export class BeatmapEditor {
     this.lockedOD = 0;
     this.lockedBpm = 200;
 
-    
+
     this.scaleAR = true;
     this.scaleOD = true;
     this.forceHardrockCirclesize = false;
@@ -58,10 +52,10 @@ export class BeatmapEditor {
     this.changePitch = false;
     this.highQualityMp3s = false;
 
-    
+
     this.bpmRate = 1.0;
 
-    
+
     this.userProfiles = [
       this.makeEmptyProfile('Profile 1'),
       this.makeEmptyProfile('Profile 2'),
@@ -69,7 +63,7 @@ export class BeatmapEditor {
       this.makeEmptyProfile('Profile 4'),
     ];
 
-    
+
     this._listeners = {
       stateChanged: [],
       beatmapSwitched: [],
@@ -77,7 +71,7 @@ export class BeatmapEditor {
       controlsModified: [],
     };
 
-    
+
     this.loadSettings();
     this.loadProfilesFromDisk();
   }
@@ -96,7 +90,7 @@ export class BeatmapEditor {
     };
   }
 
-  
+
 
   on(event, cb) {
     if (!this._listeners[event]) this._listeners[event] = [];
@@ -109,7 +103,7 @@ export class BeatmapEditor {
     }
   }
 
-  
+
 
   loadSettings() {
     try {
@@ -130,7 +124,7 @@ export class BeatmapEditor {
       if (s.changePitch != null) this.changePitch = s.changePitch;
       if (s.noSpinners != null) this.noSpinners = s.noSpinners;
       if (s.highQualityMp3s != null) this.highQualityMp3s = s.highQualityMp3s;
-    } catch {}
+    } catch { }
   }
 
   saveSettings() {
@@ -152,7 +146,7 @@ export class BeatmapEditor {
       noSpinners: this.noSpinners,
       highQualityMp3s: this.highQualityMp3s,
     };
-    try { localStorage.setItem('osutrainer_settings', JSON.stringify(s)); } catch {}
+    try { localStorage.setItem('osutrainer_settings', JSON.stringify(s)); } catch { }
   }
 
   loadProfilesFromDisk() {
@@ -160,28 +154,28 @@ export class BeatmapEditor {
       const data = JSON.parse(localStorage.getItem('osutrainer_profiles') || 'null');
       if (Array.isArray(data) && data.length === 4) {
         for (let i = 0; i < 4; i++) {
-          this.userProfiles[i] = { ...this.makeEmptyProfile(`Profile ${i+1}`), ...data[i] };
+          this.userProfiles[i] = { ...this.makeEmptyProfile(`Profile ${i + 1}`), ...data[i] };
         }
       }
-    } catch {}
+    } catch { }
   }
 
   saveProfilesToDisk() {
     try {
       localStorage.setItem('osutrainer_profiles', JSON.stringify(this.userProfiles));
-    } catch {}
+    } catch { }
   }
 
-  
+
 
   setState(s) {
     this.state = s;
     this._emit('stateChanged');
   }
 
-  
 
-  
+
+
   loadBeatmap(beatmap) {
     if (!beatmap || !beatmap.valid) {
       this.originalBeatmap = null;
@@ -202,13 +196,13 @@ export class BeatmapEditor {
       return;
     }
 
-    
-    
-    
+
+
+
     this.originalBeatmap = beatmap;
     this.newBeatmap = beatmap.clone();
 
-    
+
     if (this.bpmIsLocked) {
       this.setBpm(this.lockedBpm);
     } else {
@@ -238,10 +232,10 @@ export class BeatmapEditor {
     this._emit('controlsModified');
   }
 
-  
+
 
   requestDiffCalc() {
-    
+
     setTimeout(() => {
       try {
         const { stars, aim, speed } = calculateStarRating(this.newBeatmap);
@@ -259,7 +253,7 @@ export class BeatmapEditor {
     }, 0);
   }
 
-  
+
 
   setHP(value) {
     if (this.state !== EditorState.READY) return;
@@ -418,7 +412,7 @@ export class BeatmapEditor {
     if (this.bpmIsLocked) this.lockedBpm = bpm;
     const originalBpm = this.originalBeatmap ? this.originalBeatmap.bpm : 0;
     if (originalBpm === 0) return;
-    
+
     const newMultiplier = bpm / originalBpm;
     this.applyBpmMultiplier(newMultiplier);
   }
@@ -432,14 +426,14 @@ export class BeatmapEditor {
     this.bpmRate = multiplier;
     if (this.state === EditorState.NOT_READY) return;
 
-    
+
     if (this.scaleAR && !this.arIsLocked &&
-        this.newBeatmap.mode !== GameMode.Taiko &&
-        this.newBeatmap.mode !== GameMode.Mania) {
+      this.newBeatmap.mode !== GameMode.Taiko &&
+      this.newBeatmap.mode !== GameMode.Mania) {
       this.newBeatmap.approachRate = calculateMultipliedAR(this.originalBeatmap, this.bpmRate);
     }
 
-    
+
     if (this.scaleOD && !this.odIsLocked) {
       this.newBeatmap.overallDifficulty = this.getScaledOD();
       if (this.forceHardrockCirclesize) {
@@ -447,15 +441,15 @@ export class BeatmapEditor {
       }
     }
 
-    
-    
+
+
     this.newBeatmap = this.originalBeatmap.clone();
     this.newBeatmap.setRate(this.bpmRate);
 
-    
+
     if (this.scaleAR && !this.arIsLocked &&
-        this.newBeatmap.mode !== GameMode.Taiko &&
-        this.newBeatmap.mode !== GameMode.Mania) {
+      this.newBeatmap.mode !== GameMode.Taiko &&
+      this.newBeatmap.mode !== GameMode.Mania) {
       this.newBeatmap.approachRate = calculateMultipliedAR(this.originalBeatmap, this.bpmRate);
     }
     if (this.scaleOD && !this.odIsLocked) {
@@ -473,7 +467,7 @@ export class BeatmapEditor {
     this._emit('beatmapModified');
   }
 
-  
+
 
   getMode() { return this.originalBeatmap ? this.originalBeatmap.mode : null; }
 
@@ -509,7 +503,7 @@ export class BeatmapEditor {
     );
   }
 
-  
+
 
   resetBeatmap() {
     if (this.state !== EditorState.READY) return;
@@ -528,9 +522,9 @@ export class BeatmapEditor {
     this._emit('beatmapModified');
   }
 
-  
 
-  
+
+
   async generateBeatmap(audioBlob, onProgress) {
     if (this.state !== EditorState.READY) return null;
 
@@ -539,29 +533,29 @@ export class BeatmapEditor {
     try {
       const compensateForDT = (this.newBeatmap.approachRate > 10 || this.newBeatmap.overallDifficulty > 10);
 
-      
-      
-      
-      
+
+
+
+
       const effectiveRate = compensateForDT ? this.bpmRate / 1.5 : this.bpmRate;
 
-      
+
       const exportBeatmap = this.originalBeatmap.clone();
       if (Math.abs(effectiveRate - 1.0) > 0.001) {
         exportBeatmap.setRate(effectiveRate);
       }
 
-      
+
       if (compensateForDT) {
-        
-        
+
+
         exportBeatmap.approachRate = calculateMultipliedAR(this.originalBeatmap, this.bpmRate);
         exportBeatmap.overallDifficulty = calculateMultipliedOD(this.originalBeatmap, this.bpmRate);
-        
+
         exportBeatmap.approachRate = Math.min(exportBeatmap.approachRate, 10);
         exportBeatmap.overallDifficulty = Math.min(exportBeatmap.overallDifficulty, 10);
       } else {
-        
+
         if (this.scaleAR && exportBeatmap.mode !== GameMode.Taiko && exportBeatmap.mode !== GameMode.Mania) {
           exportBeatmap.approachRate = calculateMultipliedAR(this.originalBeatmap, this.bpmRate);
         } else {
@@ -574,7 +568,7 @@ export class BeatmapEditor {
         }
       }
 
-      
+
       if (this.hpIsLocked) exportBeatmap.hpDrainRate = this.lockedHP;
       else exportBeatmap.hpDrainRate = this.originalBeatmap.hpDrainRate;
       if (this.csIsLocked) exportBeatmap.circleSize = this.lockedCS;
@@ -583,13 +577,13 @@ export class BeatmapEditor {
       if (this.arIsLocked) exportBeatmap.approachRate = this.lockedAR;
       if (this.odIsLocked) exportBeatmap.overallDifficulty = this.lockedOD;
 
-      
+
       this.modifyBeatmapMetadata(exportBeatmap, this.bpmRate, this.changePitch, compensateForDT);
 
-      
+
       if (this.noSpinners) exportBeatmap.removeSpinners();
 
-      
+
       let newAudio = null;
       if (audioBlob && (Math.abs(this.bpmRate - 1.0) > 0.001 || this.changePitch)) {
         if (onProgress) onProgress({ phase: 'audio', ratio: 0 });
@@ -602,16 +596,16 @@ export class BeatmapEditor {
           this.highQualityMp3s,
           (r) => onProgress && onProgress({ phase: 'audio', ratio: r }),
         );
-        
+
         newAudio = { blob: result.blob, name: exportBeatmap.audioFilename };
         if (onProgress) onProgress({ phase: 'audio', ratio: 1 });
       }
 
-      
+
       if (onProgress) onProgress({ phase: 'osu', ratio: 1 });
       const osuText = exportBeatmap.serialize();
 
-      
+
       const artist = normalizeText(exportBeatmap.artist);
       const title = normalizeText(exportBeatmap.title);
       const creator = normalizeText(exportBeatmap.creator);
@@ -634,7 +628,7 @@ export class BeatmapEditor {
     }
   }
 
-  
+
   async generateBatch(beatmaps, rates, audioBlob, onProgress) {
     if (this.state !== EditorState.READY) return null;
     if (!beatmaps || beatmaps.length === 0 || !rates || rates.length === 0) return null;
@@ -645,8 +639,8 @@ export class BeatmapEditor {
       const totalSteps = rates.length + rates.length * beatmaps.length;
       let currentStep = 0;
 
-      
-      
+
+
       const audioByRate = new Map();
       const ratesNeedingAudio = rates.filter(r =>
         audioBlob && (Math.abs(r - 1.0) > 0.001 || this.changePitch)
@@ -655,7 +649,7 @@ export class BeatmapEditor {
       if (ratesNeedingAudio.length > 0) {
         const { generateAudioFilesParallel } = await import('./audio-processor.js');
 
-        
+
         const baseAudioName = beatmaps[0].audioFilename;
         const audioJobs = ratesNeedingAudio.map(rate => {
           let audioName = baseAudioName.replace(/\.[^.]+$/, '');
@@ -664,8 +658,8 @@ export class BeatmapEditor {
             audioName += ` (pitch ${rate < 1 ? 'lowered' : 'raised'})`;
           }
           audioName += '.mp3';
-          
-          
+
+
           let needsDTComp = false;
           for (const bm of beatmaps) {
             const testAR = this.scaleAR && bm.mode !== GameMode.Taiko && bm.mode !== GameMode.Mania
@@ -688,7 +682,7 @@ export class BeatmapEditor {
           };
         });
 
-        
+
         for (let i = 0; i < audioJobs.length; i++) {
           if (onProgress) onProgress({
             phase: 'audio',
@@ -699,8 +693,8 @@ export class BeatmapEditor {
           });
         }
 
-        
-        
+
+
         const audioResults = await generateAudioFilesParallel(
           audioJobs,
           (jobIdx, ratio) => {
@@ -714,7 +708,7 @@ export class BeatmapEditor {
           },
         );
 
-        
+
         for (let i = 0; i < audioJobs.length; i++) {
           audioByRate.set(audioJobs[i]._rate, {
             blob: audioResults[i].blob,
@@ -731,7 +725,7 @@ export class BeatmapEditor {
         }
       }
 
-      
+
       const results = [];
       const totalOsu = beatmaps.length * rates.length;
 
@@ -750,15 +744,15 @@ export class BeatmapEditor {
             rate,
           });
 
-          
+
           const exportBeatmap = originalBm.clone();
 
-          
+
           if (Math.abs(rate - 1.0) > 0.001) {
             exportBeatmap.setRate(rate);
           }
 
-          
+
           if (this.scaleAR && exportBeatmap.mode !== GameMode.Taiko && exportBeatmap.mode !== GameMode.Mania) {
             exportBeatmap.approachRate = calculateMultipliedAR(originalBm, rate);
           }
@@ -766,7 +760,7 @@ export class BeatmapEditor {
             exportBeatmap.overallDifficulty = calculateMultipliedOD(originalBm, rate);
           }
 
-          
+
           if (this.hpIsLocked) exportBeatmap.hpDrainRate = this.lockedHP;
           if (this.csIsLocked) exportBeatmap.circleSize = this.lockedCS;
           if (this.arIsLocked) exportBeatmap.approachRate = this.lockedAR;
@@ -775,11 +769,11 @@ export class BeatmapEditor {
             exportBeatmap.circleSize = originalBm.circleSize * 1.3;
           }
 
-          
+
           const compensateForDT = (exportBeatmap.approachRate > 10 || exportBeatmap.overallDifficulty > 10);
 
-          
-          
+
+
           const savedBpmRate = this.bpmRate;
           const savedNewBeatmap = this.newBeatmap;
           const savedOriginalBeatmap = this.originalBeatmap;
@@ -794,15 +788,15 @@ export class BeatmapEditor {
             this.originalBeatmap = savedOriginalBeatmap;
           }
 
-          
+
           if (compensateForDT) {
             exportBeatmap.approachRate = calculateMultipliedAR(exportBeatmap, 1 / 1.5);
             exportBeatmap.overallDifficulty = calculateMultipliedOD(exportBeatmap, 1 / 1.5);
             const compensatedRate = (exportBeatmap.bpm / originalBm.bpm) / 1.5;
-            
+
             const freshClone = originalBm.clone();
             freshClone.setRate(compensatedRate);
-            
+
             exportBeatmap.timingPoints = freshClone.timingPoints;
             exportBeatmap.hitObjects = freshClone.hitObjects;
             exportBeatmap.previewTime = freshClone.previewTime;
@@ -810,21 +804,21 @@ export class BeatmapEditor {
             exportBeatmap.computeBPM();
           }
 
-          
+
           if (this.noSpinners) exportBeatmap.removeSpinners();
 
-          
+
           if (audioByRate.has(rate)) {
             exportBeatmap.audioFilename = audioByRate.get(rate).name;
           } else if (rate === 1.0 && !this.changePitch) {
-            
+
             exportBeatmap.audioFilename = originalBm.audioFilename;
           }
 
-          
+
           const osuText = exportBeatmap.serialize();
 
-          
+
           const artist = normalizeText(exportBeatmap.artist);
           const title = normalizeText(exportBeatmap.title);
           const creator = normalizeText(exportBeatmap.creator);
@@ -853,7 +847,7 @@ export class BeatmapEditor {
 
       this.setState(EditorState.READY);
 
-      
+
       const audioFiles = [];
       for (const [rate, { blob, name }] of audioByRate) {
         audioFiles.push({ name, blob, rate });
@@ -867,9 +861,9 @@ export class BeatmapEditor {
     }
   }
 
-  
+
   modifyBeatmapMetadata(map, multiplier, changePitch = false, preDT = false) {
-    
+
     if (preDT) {
       const bpm = map.bpm.toFixed(0);
       map.version += ` ${multiplier.toFixed(2)}x (${bpm}bpm)`;
@@ -890,19 +884,19 @@ export class BeatmapEditor {
       map.audioFilename = audioName + '.mp3';
     }
 
-    
+
     let suffix = '';
     if (this.newBeatmap.hpDrainRate !== this.originalBeatmap.hpDrainRate) {
       suffix += ` HP${this.newBeatmap.hpDrainRate.toFixed(1)}`;
     }
     if (this.originalBeatmap.mode !== GameMode.Taiko &&
-        this.originalBeatmap.mode !== GameMode.Mania &&
-        this.newBeatmap.circleSize !== this.originalBeatmap.circleSize) {
+      this.originalBeatmap.mode !== GameMode.Mania &&
+      this.newBeatmap.circleSize !== this.originalBeatmap.circleSize) {
       suffix += ` CS${this.newBeatmap.circleSize.toFixed(1)}`;
     }
     if (this.originalBeatmap.mode !== GameMode.Taiko &&
-        this.originalBeatmap.mode !== GameMode.Mania &&
-        (this.newBeatmap.approachRate !== this.getScaledAR() || this.newBeatmap.approachRate > 10)) {
+      this.originalBeatmap.mode !== GameMode.Mania &&
+      (this.newBeatmap.approachRate !== this.getScaledAR() || this.newBeatmap.approachRate > 10)) {
       suffix += ` AR${this.newBeatmap.approachRate.toFixed(1)}`;
     }
     if (this.newBeatmap.overallDifficulty !== this.getScaledOD() || this.newBeatmap.overallDifficulty > 10) {
@@ -910,20 +904,20 @@ export class BeatmapEditor {
     }
     map.version += suffix;
 
-    
+
     const artist = normalizeText(map.artist);
     const title = normalizeText(map.title);
     const creator = normalizeText(map.creator);
     const diff = normalizeText(map.version);
     map.filename = `${artist} - ${title} (${creator}) [${diff}].osu`;
 
-    
+
     if (!map.tags.includes('osutrainer')) {
       map.tags.push('osutrainer');
     }
   }
 
-  
+
 
   saveProfile(whichProfile) {
     const i = whichProfile;
@@ -971,12 +965,12 @@ export class BeatmapEditor {
     p.lockedBpm = this.lockedBpm;
     p.bpmMultiplier = this.bpmRate;
 
-    
+
     p.highQualityMp3s = this.highQualityMp3s;
     try {
       p.useMT = localStorage.getItem('osutrainer_use_mt') !== 'false';
       p.useOsuFilename = localStorage.getItem('osutrainer_use_osu_filename') === 'true';
-    } catch {}
+    } catch { }
 
     this.saveProfilesToDisk();
     this._emit('controlsModified');
@@ -1046,12 +1040,12 @@ export class BeatmapEditor {
     if (this.scaleAR) this.newBeatmap.approachRate = calculateMultipliedAR(this.originalBeatmap, this.bpmRate);
     if (this.scaleOD) this.newBeatmap.overallDifficulty = calculateMultipliedOD(this.originalBeatmap, this.bpmRate);
 
-    
+
     if (p.highQualityMp3s !== undefined) this.highQualityMp3s = p.highQualityMp3s;
     try {
       if (p.useMT !== undefined) localStorage.setItem('osutrainer_use_mt', p.useMT ? 'true' : 'false');
       if (p.useOsuFilename !== undefined) localStorage.setItem('osutrainer_use_osu_filename', p.useOsuFilename ? 'true' : 'false');
-    } catch {}
+    } catch { }
 
     this.requestDiffCalc();
     this._emit('beatmapModified');

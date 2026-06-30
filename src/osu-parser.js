@@ -1,9 +1,3 @@
-
-
-
-
-
-
 export const GameMode = {
   osu: 0,
   Taiko: 1,
@@ -120,12 +114,12 @@ export function parseBeatmap(text, filename) {
     }
   }
 
-  
+
   if (bm.approachRate == null || bm.approachRate < 0) {
     bm.approachRate = bm.overallDifficulty;
   }
 
-  
+
   bm.computeBPM();
 
   bm.valid = !!bm.title;
@@ -141,12 +135,12 @@ function parseKV(line) {
 }
 
 function parseColor(s) {
-  
+
   return s.split(',').map(n => parseInt(n.trim(), 10));
 }
 
 function parseTimingPoint(line) {
-  
+
   const parts = line.split(',');
   if (parts.length < 2) return null;
   const time = parseFloat(parts[0]);
@@ -161,7 +155,7 @@ function parseTimingPoint(line) {
 }
 
 function parseHitObject(line) {
-  
+
   const parts = line.split(',');
   if (parts.length < 5) return null;
   const x = parseInt(parts[0], 10);
@@ -170,13 +164,13 @@ function parseHitObject(line) {
   const type = parseInt(parts[3], 10);
   const hitSound = parseInt(parts[4], 10);
   const obj = { x, y, time, type, hitSound, raw: line };
-  
+
   obj.isCircle = (type & 1) !== 0;
   obj.isSlider = (type & 2) !== 0;
   obj.isSpinner = (type & 8) !== 0;
-  obj.isHold = (type & 128) !== 0; 
+  obj.isHold = (type & 128) !== 0;
   if (obj.isSlider && parts.length > 5) {
-    obj.sliderParams = parts[5]; 
+    obj.sliderParams = parts[5];
     obj.slides = parts.length > 6 ? parseInt(parts[6], 10) : 1;
     obj.length = parts.length > 7 ? parseFloat(parts[7]) : 0;
   }
@@ -184,7 +178,7 @@ function parseHitObject(line) {
     obj.endTime = parseInt(parts[5], 10);
   }
   if (obj.isHold && parts.length > 5) {
-    
+
     const pp = parts[5].split(':');
     obj.endTime = parseInt(pp[0], 10);
   }
@@ -195,7 +189,7 @@ function parseHitObject(line) {
 export class Beatmap {
   constructor() {
     this.formatVersion = 14;
-    
+
     this.audioFilename = '';
     this.audioLeadIn = 0;
     this.previewTime = -1;
@@ -206,7 +200,7 @@ export class Beatmap {
     this.letterboxInBreaks = false;
     this.specialStyle = false;
     this.widescreenStoryboard = true;
-    
+
     this.title = '';
     this.titleUnicode = '';
     this.artist = '';
@@ -217,7 +211,7 @@ export class Beatmap {
     this.tags = [];
     this.beatmapID = 0;
     this.beatmapSetID = -1;
-    
+
     this.hpDrainRate = 5;
     this.circleSize = 4;
     this.overallDifficulty = 5;
@@ -225,16 +219,16 @@ export class Beatmap {
     this._explicitAR = false;
     this.sliderMultiplier = 1.4;
     this.sliderTickRate = 1;
-    
+
     this.background = '';
-    
+
     this.timingPoints = [];
-    
+
     this.hitObjects = [];
-    
+
     this.comboColors = [];
     this.customColors = [];
-    
+
     this.bpm = 0;
     this.minBpm = 0;
     this.maxBpm = 0;
@@ -244,16 +238,16 @@ export class Beatmap {
 
   get hitObjectCount() { return this.hitObjects.length; }
 
-  
+
   computeBPM() {
     const uninherited = this.timingPoints.filter(tp => tp.uninherited && tp.beatLength > 0);
     if (uninherited.length === 0) {
       this.bpm = this.minBpm = this.maxBpm = 0;
       return;
     }
-    
+
     const bpms = uninherited.map(tp => 60000 / tp.beatLength);
-    
+
     let dominant = bpms[0];
     let bestDur = 0;
     for (let i = 0; i < uninherited.length; i++) {
@@ -267,11 +261,11 @@ export class Beatmap {
     this.maxBpm = Math.max(...bpms);
   }
 
-  
+
   setRate(multiplier) {
     if (multiplier <= 0) return;
 
-    
+
     for (const tp of this.timingPoints) {
       tp.time = Math.round(tp.time / multiplier);
       if (tp.uninherited) {
@@ -279,7 +273,7 @@ export class Beatmap {
       }
     }
 
-    
+
     for (const ho of this.hitObjects) {
       ho.time = Math.round(ho.time / multiplier);
       if (ho.isSpinner && ho.endTime != null) {
@@ -289,24 +283,24 @@ export class Beatmap {
         ho.endTime = Math.round(ho.endTime / multiplier);
       }
       if (ho.isSlider && ho.length != null) {
-        ho.length = ho.length / multiplier; 
+        ho.length = ho.length / multiplier;
       }
     }
 
-    
+
     if (this.previewTime > 0) this.previewTime = Math.round(this.previewTime / multiplier);
     this.audioLeadIn = Math.round(this.audioLeadIn / multiplier);
 
-    
+
     this.computeBPM();
   }
 
-  
+
   removeSpinners() {
     this.hitObjects = this.hitObjects.filter(ho => !ho.isSpinner);
   }
 
-  
+
   clone() {
     const b = new Beatmap();
     Object.assign(b, this);
@@ -318,13 +312,13 @@ export class Beatmap {
     return b;
   }
 
-  
+
   serialize() {
     const out = [];
     out.push(`osu file format v${this.formatVersion}`);
     out.push('');
 
-    
+
     out.push('[General]');
     out.push(`AudioFilename: ${this.audioFilename}`);
     out.push(`AudioLeadIn: ${this.audioLeadIn}`);
@@ -338,7 +332,7 @@ export class Beatmap {
     out.push(`WidescreenStoryboard: ${this.widescreenStoryboard ? 1 : 0}`);
     out.push('');
 
-    
+
     out.push('[Editor]');
     out.push(`DistanceSpacing: 1.5`);
     out.push(`BeatDivisor: 4`);
@@ -346,7 +340,7 @@ export class Beatmap {
     out.push(`TimelineZoom: 1`);
     out.push('');
 
-    
+
     out.push('[Metadata]');
     out.push(`Title:${this.title}`);
     if (this.titleUnicode) out.push(`TitleUnicode:${this.titleUnicode}`);
@@ -360,18 +354,18 @@ export class Beatmap {
     out.push(`BeatmapSetID:${this.beatmapSetID}`);
     out.push('');
 
-    
+
     out.push('[Difficulty]');
     out.push(`HPDrainRate:${round1(this.hpDrainRate)}`);
     out.push(`CircleSize:${round1(this.circleSize)}`);
     out.push(`OverallDifficulty:${round1(this.overallDifficulty)}`);
-    
+
     out.push(`ApproachRate:${round1(this.approachRate)}`);
     out.push(`SliderMultiplier:${this.sliderMultiplier}`);
     out.push(`SliderTickRate:${this.sliderTickRate}`);
     out.push('');
 
-    
+
     out.push('[Events]');
     out.push('//Background and Video events');
     if (this.background) {
@@ -386,14 +380,14 @@ export class Beatmap {
     out.push('//Storyboard Sound Samples');
     out.push('');
 
-    
+
     out.push('[TimingPoints]');
     for (const tp of this.timingPoints) {
       out.push(`${tp.time},${tp.beatLength},${tp.meter},${tp.sampleSet},${tp.sampleIndex},${tp.volume},${tp.uninherited ? 1 : 0},${tp.effects}`);
     }
     out.push('');
 
-    
+
     if (this.comboColors.length > 0 || this.customColors.length > 0) {
       out.push('[Colours]');
       this.comboColors.forEach((c, i) => {
@@ -403,8 +397,8 @@ export class Beatmap {
       out.push('');
     }
 
-    
-    
+
+
     out.push('[HitObjects]');
     for (const ho of this.hitObjects) {
       out.push(this.serializeHitObject(ho));
@@ -413,7 +407,7 @@ export class Beatmap {
     return out.join('\n');
   }
 
-  
+
   serializeHitObject(ho) {
     const parts = [
       ho.x,
@@ -424,41 +418,41 @@ export class Beatmap {
     ];
 
     if (ho.isSlider) {
-      
+
       parts.push(ho.sliderParams || '');
       parts.push(ho.slides != null ? ho.slides : 1);
-      
+
       if (ho.length != null) {
         parts.push(ho.length);
       }
     } else if (ho.isSpinner) {
-      
+
       parts.push(ho.endTime != null ? ho.endTime : ho.time);
     } else if (ho.isHold) {
-      
+
       parts.push(ho.endTime != null ? ho.endTime : ho.time);
     }
 
-    
-    
+
+
     if (ho.raw) {
       const rawParts = ho.raw.split(',');
-      
-      
-      
-      
-      
+
+
+
+
+
       let sampleStart;
       if (ho.isSlider) sampleStart = 8;
       else if (ho.isSpinner) sampleStart = 6;
       else if (ho.isHold) sampleStart = 5;
-      else sampleStart = 5; 
+      else sampleStart = 5;
 
       if (rawParts.length > sampleStart) {
         const sampleParts = rawParts.slice(sampleStart);
         if (ho.isHold) {
-          
-          
+
+
           const lastIdx = parts.length - 1;
           const sampleStr = sampleParts.join(':');
           parts[lastIdx] = `${parts[lastIdx]}:${sampleStr}`;
@@ -473,6 +467,6 @@ export class Beatmap {
 }
 
 function round1(n) {
-  
+
   return (Math.round(n * 10) / 10).toString();
 }

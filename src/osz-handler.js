@@ -1,14 +1,9 @@
-
-
-
-
-
 import JSZip from 'jszip';
 import { parseBeatmap, normalizeText } from './osu-parser.js';
 
 
 export async function loadOsz(input) {
-  
+
   let files = input;
   if (input instanceof File) {
     files = [input];
@@ -16,12 +11,12 @@ export async function loadOsz(input) {
     files = Array.from(input);
   }
 
-  
+
   if (files.length === 1 && /\.(osz|zip)$/i.test(files[0].name)) {
     return await loadZipFile(files[0]);
   }
 
-  
+
   return await loadLooseFiles(files);
 }
 
@@ -42,7 +37,7 @@ async function loadZipFile(file) {
     fileNames.push(entry.name);
   }
 
-  
+
   for (const name of fileNames) {
     if (name.toLowerCase().endsWith('.osu')) {
       const text = await zip.file(name).async('string');
@@ -51,7 +46,7 @@ async function loadZipFile(file) {
     }
   }
 
-  
+
   const audioMap = {};
   for (const name of fileNames) {
     if (/\.(mp3|ogg)$/i.test(name)) {
@@ -61,13 +56,13 @@ async function loadZipFile(file) {
     }
   }
 
-  
+
   if (beatmaps.length > 0) {
     const audioName = beatmaps[0].audioFilename;
     audio = audioMap[audioName.toLowerCase()] || Object.values(audioMap)[0] || null;
   }
 
-  
+
   if (beatmaps.length > 0 && beatmaps[0].background) {
     const bgName = beatmaps[0].background;
     const matchEntry = fileNames.find(n => n.toLowerCase().endsWith('/' + bgName.toLowerCase()) || n.toLowerCase() === bgName.toLowerCase());
@@ -78,7 +73,7 @@ async function loadZipFile(file) {
     }
   }
 
-  
+
   for (const name of fileNames) {
     files[name] = await zip.file(name).async('uint8array');
   }
@@ -95,7 +90,7 @@ async function loadLooseFiles(fileList) {
   const audioMap = {};
 
   for (const file of fileList) {
-    
+
     const name = file.name.split('/').pop() || file.name;
     const lower = name.toLowerCase();
 
@@ -103,28 +98,28 @@ async function loadLooseFiles(fileList) {
       const text = await file.text();
       const bm = parseBeatmap(text, name);
       if (bm.valid) {
-        
+
         bm.filename = name;
         beatmaps.push(bm);
       }
     } else if (/\.(mp3|ogg)$/i.test(name)) {
       audioMap[lower] = { name, blob: file, originalPath: name };
     } else if (/\.(jpg|jpeg|png)$/i.test(name)) {
-      
+
     }
 
-    
+
     const buf = await file.arrayBuffer();
     files[name] = new Uint8Array(buf);
   }
 
-  
+
   if (beatmaps.length > 0) {
     const audioName = beatmaps[0].audioFilename;
     audio = audioMap[audioName.toLowerCase()] || Object.values(audioMap)[0] || null;
   }
 
-  
+
   if (beatmaps.length > 0 && beatmaps[0].background) {
     const bgName = beatmaps[0].background.toLowerCase();
     for (const file of fileList) {
@@ -137,14 +132,14 @@ async function loadLooseFiles(fileList) {
     }
   }
 
-  
+
   if (!background && beatmaps.length > 0) {
     for (const file of fileList) {
       const name = file.name.split('/').pop() || file.name;
       if (/\.(jpg|jpeg|png)$/i.test(name)) {
         const url = URL.createObjectURL(file);
         background = { name, blob: file, url, originalPath: name };
-        
+
         for (const bm of beatmaps) {
           bm.background = name;
         }
@@ -165,18 +160,18 @@ export async function buildOsz(originalFiles, newOsuName, newOsuText, newAudio) 
 export async function buildOszMulti(originalFiles, newOsuFiles, newAudioFiles) {
   const zip = new JSZip();
 
-  
+
   for (const [name, data] of Object.entries(originalFiles)) {
     zip.file(name, data);
   }
 
-  
+
   for (const osu of newOsuFiles) {
     const baseName = osu.name.split('/').pop();
     zip.file(baseName, osu.text);
   }
 
-  
+
   for (const audio of newAudioFiles) {
     if (!audio || !audio.name) continue;
     const baseName = audio.name.split('/').pop();
@@ -188,7 +183,7 @@ export async function buildOszMulti(originalFiles, newOsuFiles, newAudioFiles) {
     }
   }
 
-  
+
   const blob = await zip.generateAsync({
     type: 'blob',
     compression: 'DEFLATE',
