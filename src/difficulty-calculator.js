@@ -4,8 +4,6 @@ export function clamp(v, min, max) {
   return v > max ? max : v < min ? min : v;
 }
 
-
-
 function approachRateToMs(ar) {
   if (ar <= 5) return 1800.0 - ar * 120.0;
   return 1200.0 - (ar - 5) * 150.0;
@@ -32,13 +30,11 @@ function msToOverallDifficulty(ms) {
   return (79.5 - ms) / 6.0;
 }
 
-
 export function calculateMultipliedAR(beatmap, multiplier) {
   const newMs = approachRateToMs(beatmap.approachRate) / multiplier;
   const newAR = msToApproachRate(newMs);
   return clamp(newAR, 0, 11);
 }
-
 
 export function calculateMultipliedOD(beatmap, multiplier) {
   const newMs = overallDifficultyToMs(beatmap.overallDifficulty) / multiplier;
@@ -47,21 +43,10 @@ export function calculateMultipliedOD(beatmap, multiplier) {
   return clamp(newOD, 0, 11);
 }
 
-
-
-
-
-
-
-
-
-
-
 export function calculateStarRating(beatmap) {
   if (!beatmap || !beatmap.hitObjects || beatmap.hitObjects.length === 0) {
     return { stars: 0, aim: 0, speed: 0 };
   }
-
 
   if (beatmap.mode !== GameMode.osu) {
     return { stars: 0, aim: 0, speed: 0 };
@@ -75,44 +60,35 @@ export function calculateStarRating(beatmap) {
   }
 }
 
-
 function computeStandardStars(beatmap) {
   const cs = beatmap.circleSize;
   const ar = beatmap.approachRate;
   const od = beatmap.overallDifficulty;
 
-
   const radius = 54.4 - 4.48 * cs;
-
 
   const approachTime = ar <= 5
     ? 1800 - ar * 120
     : 1200 - (ar - 5) * 150;
 
-
   const hitWindow300 = 79.5 - 6 * od;
-
 
   const objects = beatmap.hitObjects.filter(h => !h.isSpinner);
   if (objects.length < 2) {
     return { stars: 0, aim: 0, speed: 0 };
   }
 
-
   const aimStrains = computeAimStrains(objects, radius, approachTime);
 
   const speedStrains = computeSpeedStrains(objects, hitWindow300);
 
-
   const aimStars = Math.sqrt(aimStrains.peak) * 1.06;
   const speedStars = Math.sqrt(speedStrains.peak) * 1.06;
-
 
   const totalStars = Math.sqrt(
     aimStars * aimStars * 1.06 +
     speedStars * speedStars * 1.06
   ) * 1.06;
-
 
   const safe = (n) => isFinite(n) && !isNaN(n) ? n : 0;
 
@@ -156,7 +132,6 @@ function computeAimStrains(objects, radius, approachTime) {
     prev = cur;
   }
 
-
   peakStrain *= (1.0 + Math.max(0, 8000 - approachTime) / 8000);
 
   return { peak: peakStrain };
@@ -186,8 +161,6 @@ function computeSpeedStrains(objects, hitWindow300) {
 
   return { peak: peakStrain };
 }
-
-
 
 export const DifficultyColors = {
   Easy: '#88b300',

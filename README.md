@@ -4,12 +4,12 @@
 
 A modern, browser-based reimagining of the classic [osu-trainer](https://github.com/FunOrange/osu-trainer) by FunOrange. Drop an `.osz` file, tweak difficulty / BPM, optionally pitch-shift the audio, and download a new `.osz` ready to drag into osu!.
 
-**100% local** — your files never leave your browser. All beatmap parsing, audio processing, and `.osz` packaging happen client-side via WebAssembly.
+**100% local by default** — your files never leave your browser. All beatmap parsing, audio processing, and `.osz` packaging happen client-side via WebAssembly. Optionally, you can switch to **Server mode** to offload the heavy FFmpeg audio processing to a server (useful on weak devices).
 
 ## Features
 
 - **Drag & drop `.osz` loading** — parses every `.osu` difficulty, background image, and audio file inside the zip
-- **Live difficulty editing** — HP, CS, AR, OD sliders with lock toggles
+- **Live difficulty editing** — HP, CS, AR, OD sliders with lock toggles (AR/OD above 10 are now properly supported)
 - **BPM rate control** — change song speed from 0.5× to 2.0× with optional pitch preservation
 - **Auto AR/OD scaling** — Approach Rate and Overall Difficulty auto-adjust to the new BPM (just like the original)
 - **HR circle size emulation** — apply Hard Rock circle size multiplier (×1.3)
@@ -17,10 +17,38 @@ A modern, browser-based reimagining of the classic [osu-trainer](https://github.
 - **4 saveable profiles** — store and recall presets (persisted in `localStorage`)
 - **Audio processing via ffmpeg.wasm** — real `atempo` / `asetrate` filters, not a fake "playback rate" hack
 - **Multi-threaded toggle** — switch between the faster MT ffmpeg core (needs COOP/COEP headers) and the universally-compatible ST core, right from the Options panel
+- **🆕 Server mode** — optionally offload FFmpeg processing to a Node.js server (see below)
 - **Batch generation** — pick multiple rates × multiple difficulties and generate them all into one `.osz` in a single click
 - **Difficulty selector** — when an `.osz` has multiple diffs, switch between them with chips at the top
 - **Simplified star rating** — for osu!standard maps, computes aim + speed stars (Taiko/Catch/Mania return 0, matching oppai)
 - **Search tag** — generated maps get the `osutrainer` tag so you can find them in osu!'s song select
+
+## Processing Mode: Local Browser vs Server
+
+The app supports two processing modes, toggleable from the **Processing Mode** panel in the UI:
+
+### Local Browser (default)
+- All audio processing runs in-browser via `ffmpeg.wasm` (WebAssembly)
+- Files never leave your device
+- Works offline once loaded
+- Can be slow on weak devices (phones, old laptops)
+
+### Server
+- Audio processing is offloaded to a Node.js server with native FFmpeg
+- Significantly faster on weak devices
+- The server URL is configurable (leave empty to use the same origin)
+- A health-check "Test" button verifies connectivity
+
+To run the server:
+
+```bash
+cd server
+npm install
+npm start
+```
+
+The server listens on `http://localhost:3001` and serves both the API and the
+built static site. See [`server/README.md`](server/README.md) for full details.
 
 ## Tech stack
 
@@ -31,6 +59,7 @@ A modern, browser-based reimagining of the classic [osu-trainer](https://github.
 - **`@ffmpeg/core`** — the **single-threaded** ffmpeg WASM core (works on any host, no special headers needed)
 - **JSZip** for `.osz` (zip) read/write
 - **Comfortaa + Inter + JetBrains Mono** fonts from Google Fonts
+- **Server**: Express + fluent-ffmpeg + ffmpeg-static (optional, for server mode)
 
 ## Getting started
 

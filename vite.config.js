@@ -11,10 +11,23 @@ export default defineConfig({
     port: 5173,
     open: false,
     headers: crossOriginIsolationHeaders,
+
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+    },
   },
   preview: {
     port: 4173,
     headers: crossOriginIsolationHeaders,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+    },
   },
   build: {
     outDir: 'dist',

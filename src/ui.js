@@ -21,11 +21,10 @@ export class UI {
     this.render();
 
     this.renderMultiThreadedToggle();
-
+    this.renderProcessingMode();
 
     this.prewarmFFmpeg();
   }
-
 
   prewarmFFmpeg() {
     import('./audio-processor.js').then(({ warmupFFmpeg }) => {
@@ -35,13 +34,10 @@ export class UI {
     });
   }
 
-
-
   cacheElements() {
     const $ = (id) => document.getElementById(id);
     this.el = {
       card: $('card'),
-
 
       songDisplay: $('songDisplay'),
       songCover: $('songCover'),
@@ -55,24 +51,20 @@ export class UI {
       modeBadge: $('modeBadge'),
       modeName: $('modeName'),
 
-
       uploadZone: $('uploadZone'),
       fileInput: $('fileInput'),
       folderInput: $('folderInput'),
       chooseFileBtn: $('chooseFileBtn'),
       chooseFolderBtn: $('chooseFolderBtn'),
 
-
       diffSelector: $('diffSelector'),
       diffSelectorList: $('diffSelectorList'),
-
 
       diffPanel: $('diffPanel'),
       bpmPanel: $('bpmPanel'),
       togglesPanel: $('togglesPanel'),
       profilesPanel: $('profilesPanel'),
       actionsPanel: $('actionsPanel'),
-
 
       HPSlider: $('HPSlider'),
       HPDisplay: $('HPDisplay'),
@@ -87,7 +79,6 @@ export class UI {
       ODDisplay: $('ODDisplay'),
       ODLock: $('ODLock'),
 
-
       BpmMultiplierTextBox: $('BpmMultiplierTextBox'),
       BpmSlider: $('BpmSlider'),
       OriginalBpmTextBox: $('OriginalBpmTextBox'),
@@ -95,7 +86,6 @@ export class UI {
       NewBpmTextBox: $('NewBpmTextBox'),
       NewBpmRangeTextBox: $('NewBpmRangeTextBox'),
       BpmLock: $('BpmLock'),
-
 
       ScaleARCheck: $('ScaleARCheck'),
       ScaleODCheck: $('ScaleODCheck'),
@@ -108,13 +98,18 @@ export class UI {
       MultiThreadedToggle: $('MultiThreadedToggle'),
       MultiThreadedStatus: $('MultiThreadedStatus'),
 
+      processingPanel: $('processingPanel'),
+      modeLocalBtn: $('modeLocalBtn'),
+      modeServerBtn: $('modeServerBtn'),
+      serverConfigRow: $('serverConfigRow'),
+      serverTestBtn: $('serverTestBtn'),
+      serverStatus: $('serverStatus'),
 
       ResetButton: $('ResetButton'),
       GenerateMapButton: $('GenerateMapButton'),
       GenerateMapLabel: $('GenerateMapLabel'),
       BatchToggleButton: $('BatchToggleButton'),
       loadNewBtn: $('loadNewBtn'),
-
 
       batchPanel: $('batchPanel'),
       batchRates: $('batchRates'),
@@ -128,23 +123,18 @@ export class UI {
       BatchGenerateButton: $('BatchGenerateButton'),
       BatchGenerateLabel: $('BatchGenerateLabel'),
 
-
       progressOverlay: $('progressOverlay'),
       progressTitle: $('progressTitle'),
       progressSubtitle: $('progressSubtitle'),
       progressFill: $('progressFill'),
       progressPct: $('progressPct'),
 
-
       aboutModal: $('aboutModal'),
       infoBtn: $('infoBtn'),
-
 
       toast: $('toast'),
     };
   }
-
-
 
   bindEvents() {
 
@@ -152,7 +142,6 @@ export class UI {
     this.el.fileInput.addEventListener('change', (e) => {
       if (e.target.files.length > 0) this.handleFile(e.target.files);
     });
-
 
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -166,7 +155,6 @@ export class UI {
         if (e.target.files.length > 0) this.handleFile(e.target.files);
       });
     }
-
 
     ['dragenter', 'dragover'].forEach(ev => {
       this.el.uploadZone.addEventListener(ev, (e) => {
@@ -187,19 +175,16 @@ export class UI {
       if (files.length > 0) this.handleFile(files);
     });
 
-
     this.el.HPSlider.addEventListener('input', (e) => this.editor.setHP(parseFloat(e.target.value)));
     this.el.CSSlider.addEventListener('input', (e) => this.editor.setCS(parseFloat(e.target.value)));
     this.el.ARSlider.addEventListener('input', (e) => this.editor.setAR(parseFloat(e.target.value)));
     this.el.ODSlider.addEventListener('input', (e) => this.editor.setOD(parseFloat(e.target.value)));
-
 
     this.el.HPLock.addEventListener('click', () => this.editor.toggleHpLock());
     this.el.CSLock.addEventListener('click', () => this.editor.toggleCsLock());
     this.el.ARLock.addEventListener('click', () => this.editor.toggleArLock());
     this.el.ODLock.addEventListener('click', () => this.editor.toggleOdLock());
     this.el.BpmLock.addEventListener('click', () => this.editor.toggleBpmLock());
-
 
     this.el.BpmMultiplierTextBox.addEventListener('change', (e) => {
       const v = parseFloat(e.target.value);
@@ -210,11 +195,9 @@ export class UI {
       if (e.key === 'Enter') e.target.blur();
     });
 
-
     this.el.BpmSlider.addEventListener('input', (e) => {
       this.editor.setBpmMultiplier(parseFloat(e.target.value));
     });
-
 
     this.el.NewBpmTextBox.addEventListener('change', (e) => {
       const v = parseInt(e.target.value, 10);
@@ -224,7 +207,6 @@ export class UI {
     this.el.NewBpmTextBox.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') e.target.blur();
     });
-
 
     this.el.ScaleARCheck.addEventListener('change', (e) => this.editor.setScaleAR(e.target.checked));
     this.el.ScaleODCheck.addEventListener('change', (e) => this.editor.setScaleOD(e.target.checked));
@@ -247,20 +229,20 @@ export class UI {
       this.el.highQualityMp3Check.checked = this.editor.highQualityMp3s;
     });
 
-
     this.el.useOsuFilenameCheck.addEventListener('change', (e) => {
       try { localStorage.setItem('osutrainer_use_osu_filename', e.target.checked ? 'true' : 'false'); } catch { }
       this.toast(e.target.checked ? 'Will save .osz as .osu filename' : 'Will save .osz as Artist - Title', 'success');
     });
 
-
     this.el.MultiThreadedCheck.addEventListener('change', (e) => {
       this.setMultiThreaded(e.target.checked);
     });
 
+    this.el.modeLocalBtn.addEventListener('click', () => this.setProcessingMode('local'));
+    this.el.modeServerBtn.addEventListener('click', () => this.setProcessingMode('server'));
+    this.el.serverTestBtn.addEventListener('click', () => this.testServer());
 
     this.el.loadNewBtn.addEventListener('click', () => this.loadNewBeatmap());
-
 
     this.el.ResetButton.addEventListener('click', () => {
       this.editor.resetBeatmap();
@@ -268,11 +250,9 @@ export class UI {
     });
     this.el.GenerateMapButton.addEventListener('click', () => this.handleGenerate());
 
-
     this.el.BatchToggleButton.addEventListener('click', () => this.toggleBatchPanel());
     this.el.BatchCloseButton.addEventListener('click', () => this.toggleBatchPanel(false));
     this.el.BatchGenerateButton.addEventListener('click', () => this.handleBatchGenerate());
-
 
     this.el.batchAddRate.addEventListener('click', () => this.addCustomRate());
     this.el.batchCustomRate.addEventListener('keydown', (e) => {
@@ -282,12 +262,10 @@ export class UI {
       }
     });
 
-
     this.el.infoBtn.addEventListener('click', () => this.showModal('aboutModal'));
     this.el.aboutModal.querySelectorAll('[data-close]').forEach(el => {
       el.addEventListener('click', () => this.hideModal('aboutModal'));
     });
-
 
     document.querySelectorAll('.profile-card').forEach((card) => {
       const idx = parseInt(card.dataset.profile, 10);
@@ -325,7 +303,6 @@ export class UI {
       });
     });
 
-
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         if (!this.el.aboutModal.hasAttribute('hidden')) this.hideModal('aboutModal');
@@ -349,8 +326,6 @@ export class UI {
     });
   }
 
-
-
   async handleFile(fileInput) {
     if (!fileInput) return;
     this.showProgress('Loading…', 'Reading files');
@@ -364,18 +339,16 @@ export class UI {
       this.loadedOsz = osz;
       this.currentDiffIndex = 0;
 
-
       this.editor.loadBeatmap(osz.beatmaps[0]);
-
 
       this.el.diffPanel.hidden = false;
       this.el.bpmPanel.hidden = false;
       this.el.togglesPanel.hidden = false;
       this.el.profilesPanel.hidden = false;
       this.el.actionsPanel.hidden = false;
+      this.el.processingPanel.hidden = false;
       this.el.uploadZone.hidden = true;
       this.el.loadNewBtn.hidden = false;
-
 
       this.renderDiffSelector();
 
@@ -397,17 +370,12 @@ export class UI {
     }
   }
 
-
   loadNewBeatmap() {
-
-
-
 
     this.editor.originalBeatmap = null;
     this.editor.newBeatmap = null;
     this.editor.setState(EditorState.NOT_READY);
     this.editor.bpmRate = 1.0;
-
 
     if (this.loadedOsz && this.loadedOsz.background) {
       URL.revokeObjectURL(this.loadedOsz.background.url);
@@ -417,20 +385,18 @@ export class UI {
     this.selectedRates.clear();
     this.selectedDiffIndices.clear();
 
-
     this.el.diffPanel.hidden = true;
     this.el.bpmPanel.hidden = true;
     this.el.togglesPanel.hidden = true;
     this.el.profilesPanel.hidden = true;
     this.el.actionsPanel.hidden = true;
+    this.el.processingPanel.hidden = true;
     this.el.diffSelector.hidden = true;
     this.el.batchPanel.hidden = true;
     this.el.uploadZone.hidden = false;
     this.el.loadNewBtn.hidden = true;
 
-
     this.el.fileInput.value = '';
-
 
     this.el.songTitle.textContent = 'Drop an .osz file to begin';
     this.el.songArtist.textContent = 'or click the upload zone below';
@@ -440,11 +406,8 @@ export class UI {
     this.el.starsBadge.hidden = true;
     this.el.modeBadge.hidden = true;
 
-
     this.el.card.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
-
-
 
   renderDiffSelector() {
     const beatmaps = this.loadedOsz ? this.loadedOsz.beatmaps : [];
@@ -472,8 +435,6 @@ export class UI {
     this.currentDiffIndex = idx;
     this.editor.loadBeatmap(this.loadedOsz.beatmaps[idx]);
 
-
-
     if (this.loadedOsz.audioMap) {
       const bm = this.loadedOsz.beatmaps[idx];
       const audioKey = bm.audioFilename.toLowerCase();
@@ -482,7 +443,6 @@ export class UI {
         console.log(`[audio] Switched to: ${this.loadedOsz.audio.name} for "${bm.version}"`);
       }
     }
-
 
     this.el.diffSelectorList.querySelectorAll('.diff-selector__chip').forEach((chip, i) => {
       chip.classList.toggle('is-active', i === idx);
@@ -494,8 +454,6 @@ export class UI {
       this.updateBatchSummary();
     }
   }
-
-
 
   toggleBatchPanel(force) {
     const show = force === undefined ? this.el.batchPanel.hasAttribute('hidden') : force;
@@ -510,7 +468,6 @@ export class UI {
   renderBatchRates() {
     if (!this.el.batchRates) return;
     this.el.batchRates.innerHTML = '';
-
 
     const customRates = this.getCustomRates();
     const allRates = [...new Set([...PRESET_RATES, ...customRates])].sort((a, b) => a - b);
@@ -588,7 +545,6 @@ export class UI {
     const beatmaps = this.loadedOsz ? this.loadedOsz.beatmaps : [];
     if (beatmaps.length === 0) return;
 
-
     const allRow = document.createElement('label');
     allRow.className = 'batch-diff-row';
     const allInput = document.createElement('input');
@@ -617,7 +573,6 @@ export class UI {
     allRow.appendChild(allLabel);
     allRow.appendChild(allMeta);
     this.el.batchDiffs.appendChild(allRow);
-
 
     beatmaps.forEach((bm, i) => {
       const row = document.createElement('label');
@@ -694,7 +649,6 @@ export class UI {
     try {
       console.log('[batch] Starting batch generate workflow');
 
-
       if (needsAudioCount > 0) {
         const { getFFmpeg } = await import('./audio-processor.js');
         await getFFmpeg((msg) => console.log('[ffmpeg]', msg));
@@ -703,12 +657,10 @@ export class UI {
       this.showProgress('Generating batch…',
         `${needsAudioCount} audio file${needsAudioCount === 1 ? '' : 's'} + ${totalMaps} beatmap${totalMaps === 1 ? '' : 's'}`);
 
-
       const savedBpmRate = this.editor.bpmRate;
       const savedNewBeatmap = this.editor.newBeatmap;
       const savedOriginalBeatmap = this.editor.originalBeatmap;
       const savedState = this.editor.state;
-
 
       const audioForBatch = this.loadedOsz.audioMap || null;
       const result = await this.editor.generateBatch(beatmaps, rates, audioBlob, (p) => {
@@ -729,7 +681,6 @@ export class UI {
         }
       });
 
-
       this.editor.bpmRate = savedBpmRate;
       this.editor.newBeatmap = savedNewBeatmap;
       this.editor.originalBeatmap = savedOriginalBeatmap;
@@ -745,7 +696,6 @@ export class UI {
       this.showProgress('Packaging…', `Building .osz with ${result.osuFiles.length} new files`);
       this.setProgress(0.99);
 
-
       const oszBlob = await buildOszMulti(
         this.loadedOsz.files,
         result.osuFiles.map(f => ({ name: f.osuFilename, text: f.osuText })),
@@ -754,7 +704,6 @@ export class UI {
       console.log('[batch] osz built, size:', oszBlob.size);
 
       this.setProgress(1);
-
 
       const filename = this.getDownloadFilename(beatmaps[0]);
       this.downloadBlob(oszBlob, filename);
@@ -770,15 +719,12 @@ export class UI {
     }
   }
 
-
-
   async handleGenerate() {
     if (!this.editor.newMapIsDifferent()) return;
     if (!this.loadedOsz) return;
 
     try {
       console.log('[generate] Starting generate workflow');
-
 
       const { getFFmpeg } = await import('./audio-processor.js');
       await getFFmpeg((msg) => console.log('[ffmpeg]', msg));
@@ -812,7 +758,6 @@ export class UI {
       this.showProgress('Packaging…', 'Building .osz file');
       this.setProgress(0.97);
 
-
       const originalFiles = this.loadedOsz.files;
       const newAudioForZip = result.audioBlob ? {
         name: result.audioFilename,
@@ -829,7 +774,6 @@ export class UI {
       console.log('[generate] osz built, size:', oszBlob.size);
 
       this.setProgress(1);
-
 
       const filename = this.getDownloadFilename(result.exportBeatmap);
       console.log('[generate] Downloading as:', filename);
@@ -855,7 +799,6 @@ export class UI {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-
   getDownloadFilename(beatmap) {
     const useOsuName = (() => {
       try { return localStorage.getItem('osutrainer_use_osu_filename') === 'true'; } catch { return false; }
@@ -870,8 +813,6 @@ export class UI {
     return makeOszFilename(beatmap);
   }
 
-
-
   render() {
     this.renderState();
     this.renderSong();
@@ -885,7 +826,6 @@ export class UI {
 
   renderState() {
     const ready = this.editor.state !== EditorState.NOT_READY;
-
 
     const inputs = [
       this.el.HPSlider, this.el.HPDisplay,
@@ -903,13 +843,11 @@ export class UI {
 
     inputs.forEach(el => { el.disabled = !ready; });
 
-
     const checks = [
       this.el.ScaleARCheck, this.el.ScaleODCheck, this.el.HRCheck,
       this.el.NoSpinnersCheck, this.el.ChangePitchCheck, this.el.highQualityMp3Check,
     ];
     checks.forEach(c => { c.disabled = !ready; });
-
 
     if (this.editor.state === EditorState.GENERATING_BEATMAP) {
       this.el.GenerateMapButton.disabled = true;
@@ -934,10 +872,8 @@ export class UI {
     this.el.songTitle.textContent = bm.titleUnicode || bm.title || 'Untitled';
     this.el.songArtist.textContent = `${bm.artistUnicode || bm.artist || 'Unknown'} · ${bm.creator || ''}`;
 
-
     this.el.diffBadge.hidden = false;
     this.el.diffName.textContent = bm.version || 'Difficulty';
-
 
     if (e.starRating > 0) {
       this.el.starsBadge.hidden = false;
@@ -948,10 +884,8 @@ export class UI {
       this.el.starsBadge.hidden = true;
     }
 
-
     this.el.modeBadge.hidden = false;
     this.el.modeName.textContent = modeName(bm.mode);
-
 
     if (this.loadedOsz && this.loadedOsz.background) {
       this.el.songCover.classList.add('has-bg');
@@ -985,7 +919,6 @@ export class UI {
     this.el.OriginalBpmTextBox.textContent = Math.round(oldbpm).toString();
     this.el.NewBpmTextBox.value = Math.round(newbpm).toString();
 
-
     if (newbpm > oldbpm + 0.001) {
       this.el.NewBpmTextBox.style.color = 'var(--red)';
     } else if (newbpm < oldbpm - 0.001) {
@@ -1004,7 +937,6 @@ export class UI {
     } else {
       this.el.NewBpmRangeTextBox.textContent = '';
     }
-
 
     this.el.BpmSlider.value = e.bpmRate;
 
@@ -1031,7 +963,6 @@ export class UI {
     set(this.el.HPDisplay, this.el.HPSlider, e.newBeatmap.hpDrainRate, e.originalBeatmap.hpDrainRate);
     set(this.el.CSDisplay, this.el.CSSlider, e.newBeatmap.circleSize, e.originalBeatmap.circleSize);
 
-
     this.el.ARDisplay.value = e.newBeatmap.approachRate.toFixed(1);
     this.el.ARSlider.value = e.newBeatmap.approachRate;
     this.el.ARDisplay.classList.remove('is-higher', 'is-lower', 'is-extreme');
@@ -1043,7 +974,6 @@ export class UI {
       this.el.ARDisplay.classList.add('is-lower');
     }
 
-
     this.el.ODDisplay.value = e.newBeatmap.overallDifficulty.toFixed(1);
     this.el.ODSlider.value = e.newBeatmap.overallDifficulty;
     this.el.ODDisplay.classList.remove('is-higher', 'is-lower', 'is-extreme');
@@ -1054,7 +984,6 @@ export class UI {
     } else if (e.newBeatmap.overallDifficulty < e.getScaledOD() - 0.05) {
       this.el.ODDisplay.classList.add('is-lower');
     }
-
 
     if (e.starRating > 0) {
       this.el.starsBadge.hidden = false;
@@ -1093,9 +1022,6 @@ export class UI {
     this.renderMultiThreadedToggle();
   }
 
-
-
-
   async renderMultiThreadedToggle() {
     const { isMultiThreadedEnabled, isMultiThreadingSupported } = await import('./audio-processor.js');
     const enabled = isMultiThreadedEnabled();
@@ -1127,7 +1053,6 @@ export class UI {
     }
   }
 
-
   async setMultiThreaded(enabled) {
     const { setMultiThreadedEnabled, isMultiThreadingSupported } = await import('./audio-processor.js');
     const supported = isMultiThreadingSupported();
@@ -1154,6 +1079,89 @@ export class UI {
         : 'Single-threaded enabled',
       enabled && supported ? 'success' : 'success'
     );
+  }
+
+  _audioApi() {
+
+    return {
+      getProcessingMode: () => {
+        try {
+          const v = localStorage.getItem('osutrainer_processing_mode');
+          return v === 'server' ? 'server' : 'local';
+        } catch { return 'local'; }
+      },
+      setProcessingMode: (mode) => {
+        try {
+          localStorage.setItem('osutrainer_processing_mode', mode === 'server' ? 'server' : 'local');
+        } catch {}
+      },
+    };
+  }
+
+  setProcessingMode(mode) {
+    const api = this._audioApi();
+    api.setProcessingMode(mode);
+    this.renderProcessingMode();
+    if (mode === 'server') {
+      this.toast('Switched to server mode. Verifying connection…', 'success');
+
+      setTimeout(() => this.testServer(), 100);
+    } else {
+      this.toast('Switched to local browser mode', 'success');
+    }
+  }
+
+  async testServer() {
+    const status = this.el.serverStatus;
+    const testBtn = this.el.serverTestBtn;
+    status.classList.remove('is-ok', 'is-err');
+    status.textContent = 'testing…';
+    testBtn.disabled = true;
+
+    try {
+      const { checkServerHealth } = await import('./audio-processor.js');
+      const result = await checkServerHealth();
+      if (result.ok) {
+        status.classList.add('is-ok');
+        status.textContent = result.ffmpeg
+          ? `connected · ffmpeg ready (v${result.version || '?'})`
+          : `connected · but ffmpeg not available on server`;
+        this.toast('Server is reachable and ready', 'success');
+      } else {
+        status.classList.add('is-err');
+        status.textContent = `failed: ${result.reason || 'unknown error'}`;
+        this.toast('Server test failed: ' + (result.reason || 'unknown'), 'error');
+      }
+    } catch (e) {
+      status.classList.add('is-err');
+      status.textContent = `failed: ${e.message}`;
+      this.toast('Server test failed: ' + e.message, 'error');
+    } finally {
+      testBtn.disabled = false;
+    }
+  }
+
+  renderProcessingMode() {
+    const api = this._audioApi();
+    const mode = api.getProcessingMode();
+
+    this.el.modeLocalBtn.classList.toggle('is-active', mode === 'local');
+    this.el.modeServerBtn.classList.toggle('is-active', mode === 'server');
+    this.el.serverConfigRow.hidden = (mode !== 'server');
+
+    if (mode === 'server') {
+      this.el.MultiThreadedToggle.style.opacity = '0.5';
+      this.el.MultiThreadedToggle.style.pointerEvents = 'none';
+      this.el.MultiThreadedStatus.textContent = 'disabled in server mode';
+
+      if (this.el.serverStatus.textContent === 'not tested') {
+        setTimeout(() => this.testServer(), 50);
+      }
+    } else {
+      this.el.MultiThreadedToggle.style.opacity = '';
+      this.el.MultiThreadedToggle.style.pointerEvents = '';
+      this.renderMultiThreadedToggle();
+    }
   }
 
   renderActions() {
@@ -1195,8 +1203,6 @@ export class UI {
     setTimeout(() => card.classList.remove('is-active'), 800);
   }
 
-
-
   showProgress(title, subtitle) {
     const wasHidden = this.el.progressOverlay.hidden;
     this.el.progressOverlay.hidden = false;
@@ -1234,8 +1240,6 @@ export class UI {
     if (el) el.hidden = true;
   }
 
-
-
   toast(message, type) {
     const t = this.el.toast;
     t.textContent = message;
@@ -1252,8 +1256,6 @@ export class UI {
       setTimeout(() => { t.hidden = true; }, 220);
     }, 2200);
   }
-
-
 
   escapeHtml(s) {
     if (s == null) return '';

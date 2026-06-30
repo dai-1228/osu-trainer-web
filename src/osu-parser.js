@@ -11,17 +11,12 @@ export function modeName(m) {
   return MODE_NAMES[m] ?? 'Unknown';
 }
 
-
 export function normalizeText(str) {
   if (str == null) return '';
   return String(str)
     .replace(/["*\\/?<>|:]/g, '');
 }
 
-/**
- * Parse a .osu file from its text content.
- * Returns a Beatmap object.
- */
 export function parseBeatmap(text, filename) {
   const bm = new Beatmap();
   bm.filename = filename || '';
@@ -63,7 +58,7 @@ export function parseBeatmap(text, filename) {
         case 'WidescreenStoryboard': bm.widescreenStoryboard = +kv.v === 1; break;
       }
     } else if (section === 'Editor') {
-      // ignore
+
     } else if (section === 'Metadata') {
       const kv = parseKV(raw);
       if (!kv) continue;
@@ -94,7 +89,7 @@ export function parseBeatmap(text, filename) {
         case 'SliderTickRate': bm.sliderTickRate = parseFloat(kv.v); break;
       }
     } else if (section === 'Events') {
-      // Background: 0,0,"filename.jpg",x,y
+
       const m = raw.match(/^0\s*,\s*0\s*,\s*"([^"]+)"/);
       if (m) bm.background = m[1];
     } else if (section === 'TimingPoints') {
@@ -114,11 +109,9 @@ export function parseBeatmap(text, filename) {
     }
   }
 
-
   if (bm.approachRate == null || bm.approachRate < 0) {
     bm.approachRate = bm.overallDifficulty;
   }
-
 
   bm.computeBPM();
 
@@ -185,7 +178,6 @@ function parseHitObject(line) {
   return obj;
 }
 
-
 export class Beatmap {
   constructor() {
     this.formatVersion = 14;
@@ -238,7 +230,6 @@ export class Beatmap {
 
   get hitObjectCount() { return this.hitObjects.length; }
 
-
   computeBPM() {
     const uninherited = this.timingPoints.filter(tp => tp.uninherited && tp.beatLength > 0);
     if (uninherited.length === 0) {
@@ -261,10 +252,8 @@ export class Beatmap {
     this.maxBpm = Math.max(...bpms);
   }
 
-
   setRate(multiplier) {
     if (multiplier <= 0) return;
-
 
     for (const tp of this.timingPoints) {
       tp.time = Math.round(tp.time / multiplier);
@@ -272,7 +261,6 @@ export class Beatmap {
         tp.beatLength = tp.beatLength / multiplier;
       }
     }
-
 
     for (const ho of this.hitObjects) {
       ho.time = Math.round(ho.time / multiplier);
@@ -287,19 +275,15 @@ export class Beatmap {
       }
     }
 
-
     if (this.previewTime > 0) this.previewTime = Math.round(this.previewTime / multiplier);
     this.audioLeadIn = Math.round(this.audioLeadIn / multiplier);
-
 
     this.computeBPM();
   }
 
-
   removeSpinners() {
     this.hitObjects = this.hitObjects.filter(ho => !ho.isSpinner);
   }
-
 
   clone() {
     const b = new Beatmap();
@@ -312,12 +296,10 @@ export class Beatmap {
     return b;
   }
 
-
   serialize() {
     const out = [];
     out.push(`osu file format v${this.formatVersion}`);
     out.push('');
-
 
     out.push('[General]');
     out.push(`AudioFilename: ${this.audioFilename}`);
@@ -332,14 +314,12 @@ export class Beatmap {
     out.push(`WidescreenStoryboard: ${this.widescreenStoryboard ? 1 : 0}`);
     out.push('');
 
-
     out.push('[Editor]');
     out.push(`DistanceSpacing: 1.5`);
     out.push(`BeatDivisor: 4`);
     out.push(`GridSize: 32`);
     out.push(`TimelineZoom: 1`);
     out.push('');
-
 
     out.push('[Metadata]');
     out.push(`Title:${this.title}`);
@@ -354,7 +334,6 @@ export class Beatmap {
     out.push(`BeatmapSetID:${this.beatmapSetID}`);
     out.push('');
 
-
     out.push('[Difficulty]');
     out.push(`HPDrainRate:${round1(this.hpDrainRate)}`);
     out.push(`CircleSize:${round1(this.circleSize)}`);
@@ -364,7 +343,6 @@ export class Beatmap {
     out.push(`SliderMultiplier:${this.sliderMultiplier}`);
     out.push(`SliderTickRate:${this.sliderTickRate}`);
     out.push('');
-
 
     out.push('[Events]');
     out.push('//Background and Video events');
@@ -380,13 +358,11 @@ export class Beatmap {
     out.push('//Storyboard Sound Samples');
     out.push('');
 
-
     out.push('[TimingPoints]');
     for (const tp of this.timingPoints) {
       out.push(`${tp.time},${tp.beatLength},${tp.meter},${tp.sampleSet},${tp.sampleIndex},${tp.volume},${tp.uninherited ? 1 : 0},${tp.effects}`);
     }
     out.push('');
-
 
     if (this.comboColors.length > 0 || this.customColors.length > 0) {
       out.push('[Colours]');
@@ -397,8 +373,6 @@ export class Beatmap {
       out.push('');
     }
 
-
-
     out.push('[HitObjects]');
     for (const ho of this.hitObjects) {
       out.push(this.serializeHitObject(ho));
@@ -406,7 +380,6 @@ export class Beatmap {
 
     return out.join('\n');
   }
-
 
   serializeHitObject(ho) {
     const parts = [
@@ -433,14 +406,8 @@ export class Beatmap {
       parts.push(ho.endTime != null ? ho.endTime : ho.time);
     }
 
-
-
     if (ho.raw) {
       const rawParts = ho.raw.split(',');
-
-
-
-
 
       let sampleStart;
       if (ho.isSlider) sampleStart = 8;
@@ -451,7 +418,6 @@ export class Beatmap {
       if (rawParts.length > sampleStart) {
         const sampleParts = rawParts.slice(sampleStart);
         if (ho.isHold) {
-
 
           const lastIdx = parts.length - 1;
           const sampleStr = sampleParts.join(':');

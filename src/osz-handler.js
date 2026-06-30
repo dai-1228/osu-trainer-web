@@ -1,7 +1,6 @@
 import JSZip from 'jszip';
 import { parseBeatmap, normalizeText } from './osu-parser.js';
 
-
 export async function loadOsz(input) {
 
   let files = input;
@@ -11,15 +10,12 @@ export async function loadOsz(input) {
     files = Array.from(input);
   }
 
-
   if (files.length === 1 && /\.(osz|zip)$/i.test(files[0].name)) {
     return await loadZipFile(files[0]);
   }
 
-
   return await loadLooseFiles(files);
 }
-
 
 async function loadZipFile(file) {
   const buf = await file.arrayBuffer();
@@ -37,7 +33,6 @@ async function loadZipFile(file) {
     fileNames.push(entry.name);
   }
 
-
   for (const name of fileNames) {
     if (name.toLowerCase().endsWith('.osu')) {
       const text = await zip.file(name).async('string');
@@ -45,7 +40,6 @@ async function loadZipFile(file) {
       if (bm.valid) beatmaps.push(bm);
     }
   }
-
 
   const audioMap = {};
   for (const name of fileNames) {
@@ -56,12 +50,10 @@ async function loadZipFile(file) {
     }
   }
 
-
   if (beatmaps.length > 0) {
     const audioName = beatmaps[0].audioFilename;
     audio = audioMap[audioName.toLowerCase()] || Object.values(audioMap)[0] || null;
   }
-
 
   if (beatmaps.length > 0 && beatmaps[0].background) {
     const bgName = beatmaps[0].background;
@@ -73,14 +65,12 @@ async function loadZipFile(file) {
     }
   }
 
-
   for (const name of fileNames) {
     files[name] = await zip.file(name).async('uint8array');
   }
 
   return { beatmaps, audio, background, audioMap, zip, files };
 }
-
 
 async function loadLooseFiles(fileList) {
   const beatmaps = [];
@@ -108,17 +98,14 @@ async function loadLooseFiles(fileList) {
 
     }
 
-
     const buf = await file.arrayBuffer();
     files[name] = new Uint8Array(buf);
   }
-
 
   if (beatmaps.length > 0) {
     const audioName = beatmaps[0].audioFilename;
     audio = audioMap[audioName.toLowerCase()] || Object.values(audioMap)[0] || null;
   }
-
 
   if (beatmaps.length > 0 && beatmaps[0].background) {
     const bgName = beatmaps[0].background.toLowerCase();
@@ -131,7 +118,6 @@ async function loadLooseFiles(fileList) {
       }
     }
   }
-
 
   if (!background && beatmaps.length > 0) {
     for (const file of fileList) {
@@ -151,26 +137,21 @@ async function loadLooseFiles(fileList) {
   return { beatmaps, audio, background, audioMap, zip: null, files };
 }
 
-
 export async function buildOsz(originalFiles, newOsuName, newOsuText, newAudio) {
   return buildOszMulti(originalFiles, [{ name: newOsuName, text: newOsuText }], newAudio ? [newAudio] : []);
 }
 
-
 export async function buildOszMulti(originalFiles, newOsuFiles, newAudioFiles) {
   const zip = new JSZip();
-
 
   for (const [name, data] of Object.entries(originalFiles)) {
     zip.file(name, data);
   }
 
-
   for (const osu of newOsuFiles) {
     const baseName = osu.name.split('/').pop();
     zip.file(baseName, osu.text);
   }
-
 
   for (const audio of newAudioFiles) {
     if (!audio || !audio.name) continue;
@@ -183,7 +164,6 @@ export async function buildOszMulti(originalFiles, newOsuFiles, newAudioFiles) {
     }
   }
 
-
   const blob = await zip.generateAsync({
     type: 'blob',
     compression: 'DEFLATE',
@@ -193,7 +173,6 @@ export async function buildOszMulti(originalFiles, newOsuFiles, newAudioFiles) {
 
   return blob;
 }
-
 
 export function makeOszFilename(beatmap) {
   const artist = normalizeText(beatmap.artist);

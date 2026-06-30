@@ -1,0 +1,28 @@
+# Render Blueprint — deploys both the static frontend and the Express API
+# as a single web service (the server already serves /dist with COOP/COEP).
+#
+# How to use:
+#   1. Push this repo to GitHub
+#   2. Go to https://dashboard.render.com/blueprints
+#   3. Click "New Blueprint" and pick your repo
+#   4. Render reads this file and creates everything automatically
+
+services:
+  - type: web
+    name: osu-trainer-web
+    runtime: node
+    plan: free
+    # Build the frontend (npm run build → dist/) AND install server deps.
+    # Render runs this in the repo root.
+    buildCommand: npm install && npm run build && cd server && npm install
+    # Start the Express server — it serves /api/* AND /dist/* on the same origin.
+    startCommand: cd server && npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20.11.0
+      - key: PORT
+        renderGroup: env
+        # Render injects PORT automatically; this is just a fallback for local.
+        value: 3001

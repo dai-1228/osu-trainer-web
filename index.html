@@ -258,6 +258,38 @@
         </div>
       </section>
 
+
+      <section class="panel" id="processingPanel" hidden>
+        <div class="panel__title">
+          <span>Processing Mode</span>
+          <span class="panel__hint">where the heavy audio work happens</span>
+        </div>
+        <div class="processing-mode">
+          <div class="processing-mode__tabs">
+            <button class="processing-mode__tab is-active" id="modeLocalBtn" type="button">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              <span>Local Browser</span>
+              <span class="processing-mode__sub">runs ffmpeg.wasm — files never leave your device</span>
+            </button>
+            <button class="processing-mode__tab" id="modeServerBtn" type="button">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+              <span>Server</span>
+              <span class="processing-mode__sub">offloads ffmpeg to a server — faster on weak devices</span>
+            </button>
+          </div>
+          <div class="processing-mode__config" id="serverConfigRow" hidden>
+            <div class="processing-mode__info">
+              Audio is processed on the server hosting this site (via <code>/api/process-audio</code>).
+              No configuration needed — it just uses whatever host you loaded this page from.
+            </div>
+            <div class="processing-mode__url-row">
+              <span class="processing-mode__status" id="serverStatus">not tested</span>
+              <button class="btn btn--ghost btn--sm" id="serverTestBtn" type="button">Test connection</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       
       <section class="panel" id="profilesPanel" hidden>
         <div class="panel__title">
