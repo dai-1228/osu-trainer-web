@@ -5,6 +5,7 @@ import socketserver
 import os
 import functools
 
+
 class COOPHandler(http.server.SimpleHTTPRequestHandler):
 
     def end_headers(self):
@@ -12,6 +13,7 @@ class COOPHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Cross-Origin-Embedder-Policy', 'require-corp')
         self.send_header('Accept-Ranges', 'bytes')
         super().end_headers()
+
 
 def main():
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8084
@@ -33,6 +35,6 @@ def main():
             print("\nStopping server...")
             httpd.shutdown()
 
+
 if __name__ == "__main__":
     main()
-

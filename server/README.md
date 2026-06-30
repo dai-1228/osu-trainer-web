@@ -44,7 +44,7 @@ Returns server status:
 Multipart form data:
 
 | field         | type   | description                          |
-|---------------|--------|--------------------------------------|
+| ------------- | ------ | ------------------------------------ |
 | `audio`       | File   | The input audio file (mp3, ogg, etc) |
 | `multiplier`  | string | Speed multiplier (e.g. `"1.2"`)      |
 | `changePitch` | string | `"true"` or `"false"`                |
@@ -103,9 +103,9 @@ default.
 
 ## Environment variables
 
-| variable | default | description                |
-|----------|---------|----------------------------|
-| `PORT`   | `3001`  | Port to listen on          |
+| variable | default | description       |
+| -------- | ------- | ----------------- |
+| `PORT`   | `3001`  | Port to listen on |
 
 ## Dependencies
 

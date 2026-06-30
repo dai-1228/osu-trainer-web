@@ -28,12 +28,14 @@ A modern, browser-based reimagining of the classic [osu-trainer](https://github.
 The app supports two processing modes, toggleable from the **Processing Mode** panel in the UI:
 
 ### Local Browser (default)
+
 - All audio processing runs in-browser via `ffmpeg.wasm` (WebAssembly)
 - Files never leave your device
 - Works offline once loaded
 - Can be slow on weak devices (phones, old laptops)
 
 ### Server
+
 - Audio processing is offloaded to a Node.js server with native FFmpeg
 - Significantly faster on weak devices
 - The server URL is configurable (leave empty to use the same origin)
@@ -118,6 +120,7 @@ python3 serve_with_coop.py 8084 dist  # custom server with COOP/COEP headers
 Upload the contents of `dist/` to any static host that supports custom HTTP headers (Netlify, Vercel, Cloudflare Pages, nginx, etc.). You **must** configure COOP/COEP headers for multi-threaded ffmpeg to work.
 
 **Netlify** (`netlify.toml`):
+
 ```toml
 [[headers]]
   for = "/*"
@@ -127,19 +130,23 @@ Upload the contents of `dist/` to any static host that supports custom HTTP head
 ```
 
 **Vercel** (`vercel.json`):
+
 ```json
 {
-  "headers": [{
-    "source": "/(.*)",
-    "headers": [
-      { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
-      { "key": "Cross-Origin-Embedder-Policy", "value": "require-corp" }
-    ]
-  }]
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+        { "key": "Cross-Origin-Embedder-Policy", "value": "require-corp" }
+      ]
+    }
+  ]
 }
 ```
 
 **nginx**:
+
 ```nginx
 add_header Cross-Origin-Opener-Policy "same-origin";
 add_header Cross-Origin-Embedder-Policy "require-corp";

@@ -1,20 +1,20 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from "vite";
 
 const crossOriginIsolationHeaders = {
-  'Cross-Origin-Opener-Policy': 'same-origin',
-  'Cross-Origin-Embedder-Policy': 'require-corp',
+  "Cross-Origin-Opener-Policy": "same-origin",
+  "Cross-Origin-Embedder-Policy": "require-corp",
 };
 
 export default defineConfig({
-  base: './',
+  base: "./",
   server: {
     port: 5173,
     open: false,
     headers: crossOriginIsolationHeaders,
 
     proxy: {
-      '/api': {
-        target: 'http://localhost:3001',
+      "/api": {
+        target: "http://localhost:3001",
         changeOrigin: true,
       },
     },
@@ -23,18 +23,18 @@ export default defineConfig({
     port: 4173,
     headers: crossOriginIsolationHeaders,
     proxy: {
-      '/api': {
-        target: 'http://localhost:3001',
+      "/api": {
+        target: "http://localhost:3001",
         changeOrigin: true,
       },
     },
   },
   build: {
-    outDir: 'dist',
+    outDir: "dist",
     chunkSizeWarningLimit: 35000,
     assetsInlineLimit: 0,
   },
   optimizeDeps: {
-    exclude: ['@ffmpeg/core', '@ffmpeg/core-mt', '@ffmpeg/ffmpeg'],
+    exclude: ["@ffmpeg/core", "@ffmpeg/core-mt", "@ffmpeg/ffmpeg"],
   },
 });
